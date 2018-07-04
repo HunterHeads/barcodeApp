@@ -1,4 +1,4 @@
-package barcodeApp;
+package barcodeApp.service;
 
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-public class PdfCreator {
+public class BarcodeCreatorService {
     {
         exetutionNumber = 0;
     }
