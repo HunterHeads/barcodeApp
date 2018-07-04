@@ -1,7 +1,9 @@
-package barcodeApp.launcher;
+package barcodeApp;
 
-import barcodeApp.service.BarcodeCreatorService;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import java.io.File;
 
 @SpringBootApplication
 public class BarcodeAppApplication {
@@ -9,8 +11,8 @@ public class BarcodeAppApplication {
 	public static void main(String[] args) {
 //		SpringApplication.run(BarcodeAppApplication.class, args);
 
-		BarcodeCreatorService barcodeCreatorService = new BarcodeCreatorService();
+		PdfCreator pdfCreator = new PdfCreator();
 		// zwraca void - powinien stworzyć sie folder results a w nim wynik
-		barcodeCreatorService.receiveDataFromFormAndReturnPdfFile("Barcode128", "1234567890128");
+		pdfCreator.receiveDataFromFormAndReturnPdfFile("Barcode128", "1234567890128", "9876543210128");
 	}
 }

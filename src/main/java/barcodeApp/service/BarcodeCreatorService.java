@@ -1,14 +1,10 @@
 package barcodeApp.service;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.*;
+import com.itextpdf.text.Image;
 import com.itextpdf.text.pdf.*;
 
-import java.awt.*;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -19,44 +15,53 @@ public class BarcodeCreatorService {
 
     private static final String FILE_DESTINATION = "results/";
     private static int exetutionNumber;
+    private PdfWriter pdfWriter;
 
     private Barcode getBarcodeType(String barcodeTypeFromForm){
         switch(barcodeTypeFromForm){
-            case "Barcode128":
+            case "128":
                 return new Barcode128();
-            case "Barcode39":
+            case "39":
                 return new Barcode39();
-            case "BarcodeCodabar":
+            case "Codabar":
                 return new BarcodeCodabar();
-            case "BarcodeEAN":
+            case "EAN":
                 return new BarcodeEAN();
-            case "BarcodeInter25":
+            case "Inter25":
                 return new BarcodeInter25();
-            case "BarcodePostnet":
+            case "Postnet":
                 return new BarcodePostnet();
         }
 
         return null;
     }
 
-    private List<java.awt.Image> createImageBarcodeList(String barcodeTypeFromForm, String... inputFromForm){
-        List<java.awt.Image> barcodeImageList = new LinkedList<>();
+    private List<Image> createImageBarcodeList(String barcodeTypeFromForm, String... inputFromForm){
+        List<Image> barcodeImageList = new LinkedList<>();
         Barcode barcodeType = getBarcodeType(barcodeTypeFromForm);
+        PdfContentByte pdfContentByte = pdfWriter.getDirectContent();
         if (barcodeType != null) {
             for (String s : inputFromForm) {
                 barcodeType.setCode(s);
-                barcodeImageList.add(barcodeType.createAwtImage(Color.BLACK, Color.WHITE));
+                barcodeImageList.add(barcodeType.createImageWithBarcode(pdfContentByte,null,null));
             }
         }
 
         return barcodeImageList;
     }
 
-    private Document createPdfFile(List<java.awt.Image> barcodeImageList, String filePath) throws DocumentException, IOException {
+    private Document createPdfFile(String barcodeTypeFromForm, String filePath, String... inputFromForm) throws DocumentException, IOException {
         Document document = new Document();
-        PdfWriter.getInstance(document, new FileOutputStream(filePath));
+        pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(filePath));
         document.open();
-        document.add(new Paragraph("Hello World!"));
+        List<Image> barcodeImageList = createImageBarcodeList(barcodeTypeFromForm, inputFromForm);
+
+        document.add(new Paragraph("Results for Barcode" + barcodeTypeFromForm));
+        for (Image b : barcodeImageList){
+            document.add(b);
+            document.add(new Paragraph("\n"));
+        }
+
         document.close();
         return document;
     }
@@ -67,17 +72,20 @@ public class BarcodeCreatorService {
         return outputFile;
     }
 
-    public void receiveDataFromFormAndReturnPdfFile(String barcodeTypeFromForm, String... inputFromForm){
-        List<java.awt.Image> barcodeImageList = createImageBarcodeList(barcodeTypeFromForm, inputFromForm);
-        File outputFile;
+    public InputStream receiveDataFromFormAndReturnPdfFile(String barcodeTypeFromForm, String... inputFromForm){
+        InputStream inputStream = null;
 
         try {
             String filePath = FILE_DESTINATION + "file" + ++exetutionNumber + ".pdf";
-            outputFile = createFile(filePath);
-            createPdfFile(barcodeImageList, filePath);
+            File outputFile = createFile(filePath);
+            createPdfFile(barcodeTypeFromForm, filePath, inputFromForm);
+            inputStream = new FileInputStream(outputFile);
         }
         catch(Exception e){
             e.printStackTrace();
+        }
+        finally{
+            return inputStream;
         }
     }
 }
