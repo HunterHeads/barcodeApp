@@ -13,6 +13,6 @@ public class BarcodeAppApplication {
 
 		PdfCreator pdfCreator = new PdfCreator();
 		// zwraca void - powinien stworzyć sie folder results a w nim wynik
-		pdfCreator.receiveDataFromFormAndReturnPdfFile("Barcode128", "1234567890128");
+		pdfCreator.receiveDataFromFormAndReturnPdfFile("Barcode128", "1234567890128", "9876543210128");
 	}
 }
