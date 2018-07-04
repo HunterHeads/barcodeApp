@@ -4,9 +4,7 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.pdf.*;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,17 +19,17 @@ public class PdfCreator {
 
     private Barcode getBarcodeType(String barcodeTypeFromForm){
         switch(barcodeTypeFromForm){
-            case "Barcode128":
+            case "128":
                 return new Barcode128();
-            case "Barcode39":
+            case "39":
                 return new Barcode39();
-            case "BarcodeCodabar":
+            case "Codabar":
                 return new BarcodeCodabar();
-            case "BarcodeEAN":
+            case "EAN":
                 return new BarcodeEAN();
-            case "BarcodeInter25":
+            case "Inter25":
                 return new BarcodeInter25();
-            case "BarcodePostnet":
+            case "Postnet":
                 return new BarcodePostnet();
         }
 
@@ -58,7 +56,7 @@ public class PdfCreator {
         document.open();
         List<Image> barcodeImageList = createImageBarcodeList(barcodeTypeFromForm, inputFromForm);
 
-        document.add(new Paragraph("Results for " + barcodeTypeFromForm));
+        document.add(new Paragraph("Results for Barcode" + barcodeTypeFromForm));
         for (Image b : barcodeImageList){
             document.add(b);
             document.add(new Paragraph("\n"));
@@ -68,19 +66,26 @@ public class PdfCreator {
         return document;
     }
 
-    private void createFile(String filePath){
+    private File createFile(String filePath){
         File outputFile = new File(filePath);
         outputFile.getParentFile().mkdirs();
+        return outputFile;
     }
 
-    public void receiveDataFromFormAndReturnPdfFile(String barcodeTypeFromForm, String... inputFromForm){
+    public InputStream receiveDataFromFormAndReturnPdfFile(String barcodeTypeFromForm, String... inputFromForm){
+        InputStream inputStream = null;
+
         try {
             String filePath = FILE_DESTINATION + "file" + ++exetutionNumber + ".pdf";
-            createFile(filePath);
+            File outputFile = createFile(filePath);
             createPdfFile(barcodeTypeFromForm, filePath, inputFromForm);
+            inputStream = new FileInputStream(outputFile);
         }
         catch(Exception e){
             e.printStackTrace();
+        }
+        finally{
+            return inputStream;
         }
     }
 }
