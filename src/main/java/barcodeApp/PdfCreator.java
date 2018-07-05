@@ -10,16 +10,17 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class PdfCreator {
-    {
+    static {
         exetutionNumber = 0;
     }
 
     private static final String FILE_DESTINATION = "results/";
     private static int exetutionNumber;
     private PdfWriter pdfWriter;
+    private List<BarcodeChecker> barcodeChecker;
 
-    private Barcode getBarcodeType(String barcodeTypeFromForm){
-        switch(barcodeTypeFromForm){
+    private Barcode getBarcodeType(String barcodeTypeFromForm) {
+        switch (barcodeTypeFromForm) {
             case "128":
                 return new Barcode128();
             case "39":
@@ -39,6 +40,72 @@ public class PdfCreator {
         return null;
     }
 
+    // obiekt do testow bc - if false => zapisanie tego faktu na liscie wraz z odpowiednim komunikatem bledu
+    private boolean isCorrectInputString(Barcode barcode, String input) {
+        BarcodeChecker bc = new BarcodeChecker();
+        if (barcode instanceof Barcode128) {
+            if (bc.isBarcode128(input)) {
+                return true;
+            } else {
+                barcodeChecker.add(new BarcodeChecker(bc.getErrorMessage(), input));
+                return false;
+            }
+        }
+        if (barcode instanceof Barcode39) {
+            if (bc.isBarcode39(input)) {
+                return true;
+            } else {
+                barcodeChecker.add(new BarcodeChecker(bc.getErrorMessage(), input));
+                return false;
+            }
+        }
+        if (barcode instanceof BarcodeCodabar) {
+            if (bc.isBarcodeCodabar(input)) {
+                return true;
+            } else {
+                barcodeChecker.add(new BarcodeChecker(bc.getErrorMessage(), input));
+                return false;
+            }
+        }
+        if (barcode instanceof BarcodeEAN) {
+            if (bc.isBarcodeEAN(input)) {
+                return true;
+            } else {
+                barcodeChecker.add(new BarcodeChecker(bc.getErrorMessage(), input));
+                return false;
+            }
+        }
+        if (barcode instanceof BarcodeInter25) {
+            if (bc.isBarcodeInter25(input)) {
+                return true;
+            } else {
+                barcodeChecker.add(new BarcodeChecker(bc.getErrorMessage(), input));
+                return false;
+            }
+        }
+        if (barcode instanceof BarcodePostnet) {
+            if (bc.isBarcodePostnet(input)) {
+                return true;
+            } else {
+                barcodeChecker.add(new BarcodeChecker(bc.getErrorMessage(), input));
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isCorrectInputString(String input) {  // QR
+        BarcodeChecker bc = new BarcodeChecker();
+        if (bc.isBarcodeQR(input)) {
+            return true;
+        } else {
+            barcodeChecker.add(new BarcodeChecker(bc.getErrorMessage(), input));
+            return false;
+        }
+    }
+
+    // null => w przypadku gdy String nie jest poprawny
     private List<Image> createImageBarcodeList(String barcodeTypeFromForm, String... inputFromForm) throws BadElementException {
         List<Image> barcodeImageList = new LinkedList<>();
         Barcode barcodeType = getBarcodeType(barcodeTypeFromForm);
@@ -47,17 +114,23 @@ public class PdfCreator {
         if (barcodeType == null) {      // QR
             BarcodeQRCode barcodeQRCode;
             for (String s : inputFromForm) {
-                barcodeQRCode = new BarcodeQRCode(s, 100,100, new HashMap<>());
-                barcodeImageList.add(barcodeQRCode.getImage());
+                if (isCorrectInputString(s)) {
+                    barcodeQRCode = new BarcodeQRCode(s, 100, 100, new HashMap<>());
+                    barcodeImageList.add(barcodeQRCode.getImage());
+                } else {
+                    barcodeImageList.add(null); // nastapil blad
+                }
             }
-        }
-        else {
+        } else {
             for (String s : inputFromForm) {
-                barcodeType.setCode(s);
-                barcodeImageList.add(barcodeType.createImageWithBarcode(pdfContentByte, null, null));
+                if (isCorrectInputString(barcodeType, s)) {
+                    barcodeType.setCode(s);
+                    barcodeImageList.add(barcodeType.createImageWithBarcode(pdfContentByte, null, null));
+                } else {
+                    barcodeImageList.add(null); // nastapil blad
+                }
             }
         }
-
 
         return barcodeImageList;
     }
@@ -66,43 +139,52 @@ public class PdfCreator {
         Document document = new Document();
         pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(filePath));
         document.open();
-        try{
+        try {
             List<Image> barcodeImageList = createImageBarcodeList(barcodeTypeFromForm, inputFromForm);
             document.add(new Paragraph("Results for Barcode" + barcodeTypeFromForm));
-            for (Image b : barcodeImageList){
-                document.add(b);
-                document.add(new Paragraph("\n"));
+            int i = 0;
+            for (Image b : barcodeImageList) {
+                if (b == null) {     // w przypadku bledu wypisywanie czego on dotyczy - bledy przechowywane na liscie
+                    document.add(new Paragraph(barcodeChecker.get(i).getBarcode() + " : " + barcodeChecker.get(i).getErrorMessage()));
+                    i++;
+                } else {
+                    document.add(b);
+                    document.add(new Paragraph("\n"));
+                }
             }
 
             document.close();
             return document;
-        }
-        catch (BadElementException e){
+        } catch (BadElementException e) {
             document.close();
             e.printStackTrace();
             return null;
         }
     }
 
-    private File createFile(String filePath){
+    private File createFile(String filePath) {
         File outputFile = new File(filePath);
         outputFile.getParentFile().mkdirs();
         return outputFile;
     }
 
-    public InputStream receiveDataFromFormAndReturnPdfFile(String barcodeTypeFromForm, String... inputFromForm){
+    private void clear() {
+        barcodeChecker = null;
+    }
+
+    public InputStream receiveDataFromFormAndReturnPdfFile(String barcodeTypeFromForm, String... inputFromForm) {
         InputStream inputStream = null;
 
         try {
+            barcodeChecker = new LinkedList<>();
             String filePath = FILE_DESTINATION + "file" + ++exetutionNumber + ".pdf";
             File outputFile = createFile(filePath);
             createPdfFile(barcodeTypeFromForm, filePath, inputFromForm);
             inputStream = new FileInputStream(outputFile);
-        }
-        catch(Exception e){
+            clear();    // barcodeList !
+        } catch (Exception e) {
             e.printStackTrace();
-        }
-        finally{
+        } finally {
             return inputStream;
         }
     }
