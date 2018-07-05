@@ -5,6 +5,7 @@ import com.itextpdf.text.Image;
 import com.itextpdf.text.pdf.*;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -31,21 +32,32 @@ public class PdfCreator {
                 return new BarcodeInter25();
             case "Postnet":
                 return new BarcodePostnet();
+            case "QR":
+                return null; // QR nie dziedziczy po Barode
         }
 
         return null;
     }
 
-    private List<Image> createImageBarcodeList(String barcodeTypeFromForm, String... inputFromForm){
+    private List<Image> createImageBarcodeList(String barcodeTypeFromForm, String... inputFromForm) throws BadElementException {
         List<Image> barcodeImageList = new LinkedList<>();
         Barcode barcodeType = getBarcodeType(barcodeTypeFromForm);
         PdfContentByte pdfContentByte = pdfWriter.getDirectContent();
-        if (barcodeType != null) {
+
+        if (barcodeType == null) {      // QR
+            BarcodeQRCode barcodeQRCode;
             for (String s : inputFromForm) {
-                barcodeType.setCode(s);
-                barcodeImageList.add(barcodeType.createImageWithBarcode(pdfContentByte,null,null));
+                barcodeQRCode = new BarcodeQRCode(s, 100,100, new HashMap<>());
+                barcodeImageList.add(barcodeQRCode.getImage());
             }
         }
+        else {
+            for (String s : inputFromForm) {
+                barcodeType.setCode(s);
+                barcodeImageList.add(barcodeType.createImageWithBarcode(pdfContentByte, null, null));
+            }
+        }
+
 
         return barcodeImageList;
     }
@@ -54,16 +66,22 @@ public class PdfCreator {
         Document document = new Document();
         pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(filePath));
         document.open();
-        List<Image> barcodeImageList = createImageBarcodeList(barcodeTypeFromForm, inputFromForm);
+        try{
+            List<Image> barcodeImageList = createImageBarcodeList(barcodeTypeFromForm, inputFromForm);
+            document.add(new Paragraph("Results for Barcode" + barcodeTypeFromForm));
+            for (Image b : barcodeImageList){
+                document.add(b);
+                document.add(new Paragraph("\n"));
+            }
 
-        document.add(new Paragraph("Results for Barcode" + barcodeTypeFromForm));
-        for (Image b : barcodeImageList){
-            document.add(b);
-            document.add(new Paragraph("\n"));
+            document.close();
+            return document;
         }
-
-        document.close();
-        return document;
+        catch (BadElementException e){
+            document.close();
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private File createFile(String filePath){
