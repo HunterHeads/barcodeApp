@@ -40,11 +40,9 @@ public class BarcodeCreatorService {
                 return new BarcodeInter25();
             case "Postnet":
                 return new BarcodePostnet();
-            case "QR":
+            default:
                 return null; // QR nie dziedziczy po Barode
         }
-
-        return null;
     }
 
     // obiekt do testow bc - if false => zapisanie tego faktu na liscie wraz z odpowiednim komunikatem bledu
@@ -128,7 +126,8 @@ public class BarcodeCreatorService {
                     barcodeImageList.add(null); // nastapil blad
                 }
             }
-        } else {
+        }
+        else {
             for (String s : inputFromForm) {
                 if (isCorrectInputString(barcodeType, s)) {
                     barcodeType.setCode(s);
