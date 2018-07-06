@@ -1,18 +1,18 @@
-package barcodeApp;
+package barcodeApp.validator;
 
 import org.springframework.stereotype.Component;
 
 // funkcje sprawdzajace zgodnosc z danym kodem oraz przechowywanie komunikatow o bledach
 @Component
-public final class BarcodeChecker {
+public final class BarcodeValidator {
     private String errorMessage;
     private String barcode;
 
-    public BarcodeChecker() {
+    public BarcodeValidator() {
 
     }
 
-    public BarcodeChecker(String errorMessage, String barcode) {
+    public BarcodeValidator(String errorMessage, String barcode) {
         this.errorMessage = errorMessage;
         this.barcode = barcode;
     }

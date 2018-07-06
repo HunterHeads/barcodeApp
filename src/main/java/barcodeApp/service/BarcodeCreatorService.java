@@ -115,7 +115,7 @@ public class PdfCreator {
             BarcodeQRCode barcodeQRCode;
             for (String s : inputFromForm) {
                 if (isCorrectInputString(s)) {
-                    barcodeQRCode = new BarcodeQRCode(s, 100, 100, new HashMap<>());
+                    barcodeQRCode = new BarcodeQRCode(s, 200, 200, new HashMap<>());
                     barcodeImageList.add(barcodeQRCode.getImage());
                 } else {
                     barcodeImageList.add(null); // nastapil blad
@@ -125,7 +125,9 @@ public class PdfCreator {
             for (String s : inputFromForm) {
                 if (isCorrectInputString(barcodeType, s)) {
                     barcodeType.setCode(s);
-                    barcodeImageList.add(barcodeType.createImageWithBarcode(pdfContentByte, null, null));
+                    Image image = barcodeType.createImageWithBarcode(pdfContentByte, null, null);
+                    image.scalePercent(300);
+                    barcodeImageList.add(image);
                 } else {
                     barcodeImageList.add(null); // nastapil blad
                 }
@@ -142,14 +144,20 @@ public class PdfCreator {
         try {
             List<Image> barcodeImageList = createImageBarcodeList(barcodeTypeFromForm, inputFromForm);
             document.add(new Paragraph("Results for Barcode" + barcodeTypeFromForm));
-            int i = 0;
+            int i = 0; // iterator barcodeChecker
+            int j = 0; // iterator ilosci elementow na stronie
             for (Image b : barcodeImageList) {
                 if (b == null) {     // w przypadku bledu wypisywanie czego on dotyczy - bledy przechowywane na liscie
                     document.add(new Paragraph(barcodeChecker.get(i).getBarcode() + " : " + barcodeChecker.get(i).getErrorMessage()));
                     i++;
                 } else {
                     document.add(b);
-                    document.add(new Paragraph("\n"));
+                    document.add(new Paragraph("\n\n"));
+                }
+
+                if (++j % 3 == 0) {
+                    document.newPage();
+                    j = 0;
                 }
             }
 
@@ -189,9 +197,10 @@ public class PdfCreator {
         }
     }
 
-    public InputStream receiveDataFromFormAndReturnPdfFile(String barcodeTypeFromForm, String inputFromForm){
+    public InputStream receiveDataFromFormAndReturnPdfFile(String barcodeTypeFromForm, String inputFromForm) {
         InputStream inputStream;
 
+        inputFromForm = inputFromForm.replace(" ", "");
         String[] inputArray = inputFromForm.split(",");
         inputStream = performToPdfFile(barcodeTypeFromForm, inputArray);
 
