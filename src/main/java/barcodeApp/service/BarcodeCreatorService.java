@@ -16,6 +16,8 @@ import java.util.List;
 public class BarcodeCreatorService {
     @Autowired
     BarcodeCreatorService barcodeCreatorService;
+    @Autowired
+    BarcodeValidator barcodeValidator;
 
     static {
         exetutionNumber = 0;
@@ -27,6 +29,8 @@ public class BarcodeCreatorService {
     private List<BarcodeValidator> barcodeValidatorList;
 
     private Barcode getBarcodeType(String barcodeTypeFromForm) {
+//        Barcode lol = new Barcode128.();
+//        System.out.println(lol.getCodeType());
         switch (barcodeTypeFromForm) {
             case "128":
                 return new Barcode128();
@@ -46,69 +50,70 @@ public class BarcodeCreatorService {
     }
 
     // obiekt do testow bc - if false => zapisanie tego faktu na liscie wraz z odpowiednim komunikatem bledu
-    private boolean isCorrectInputString(Barcode barcode, String input) {
-        BarcodeValidator bc = new BarcodeValidator();
-        if (barcode instanceof Barcode128) {
-            if (bc.isBarcode128(input)) {
-                return true;
-            } else {
-                barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
-                return false;
-            }
-        }
-        if (barcode instanceof Barcode39) {
-            if (bc.isBarcode39(input)) {
-                return true;
-            } else {
-                barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
-                return false;
-            }
-        }
-        if (barcode instanceof BarcodeCodabar) {
-            if (bc.isBarcodeCodabar(input)) {
-                return true;
-            } else {
-                barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
-                return false;
-            }
-        }
-        if (barcode instanceof BarcodeEAN) {
-            if (bc.isBarcodeEAN(input)) {
-                return true;
-            } else {
-                barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
-                return false;
-            }
-        }
-        if (barcode instanceof BarcodeInter25) {
-            if (bc.isBarcodeInter25(input)) {
-                return true;
-            } else {
-                barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
-                return false;
-            }
-        }
-        if (barcode instanceof BarcodePostnet) {
-            if (bc.isBarcodePostnet(input)) {
-                return true;
-            } else {
-                barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
-                return false;
-            }
-        }
+//    private boolean isCorrectInputString(Barcode barcode, String input) {
+//        BarcodeValidator bc = new BarcodeValidator();
+//        if (barcode instanceof Barcode128) {
+//            if (bc.isBarcode128(input)) {
+//                return true;
+//            } else {
+//                barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
+//                return false;
+//            }
+//        }
+//        if (barcode instanceof Barcode39) {
+//            if (bc.isBarcode39(input)) {
+//                return true;
+//            } else {
+//                barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
+//                return false;
+//            }
+//        }
+//        if (barcode instanceof BarcodeCodabar) {
+//            if (bc.isBarcodeCodabar(input)) {
+//                return true;
+//            } else {
+//                barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
+//                return false;
+//            }
+//        }
+//        if (barcode instanceof BarcodeEAN) {
+//            if (bc.isBarcodeEAN(input)) {
+//                return true;
+//            } else {
+//                barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
+//                return false;
+//            }
+//        }
+//        if (barcode instanceof BarcodeInter25) {
+//            if (bc.isBarcodeInter25(input)) {
+//                return true;
+//            } else {
+//                barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
+//                return false;
+//            }
+//        }
+//        if (barcode instanceof BarcodePostnet) {
+//            if (bc.isBarcodePostnet(input)) {
+//                return true;
+//            } else {
+//                barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
+//                return false;
+//            }
+//        }
+//
+//        return false;
+//    }
 
-        return false;
-    }
-
-    private boolean isCorrectInputString(String input) {  // QR
-        BarcodeValidator bc = new BarcodeValidator();
-        if (bc.isBarcodeQR(input)) {
-            return true;
-        } else {
-            barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
-            return false;
-        }
-    }
+//    private boolean isCorrectInputString(String input) {  // QR
+//        BarcodeValidator bc = new BarcodeValidator();
+//        if (bc.isBarcodeQR(input)) {
+//            return true;
+//        } else {
+//            barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
+//            return false;
+//        }
+//    }
+    //BarcodeValidator bc = new BarcodeValidator();
 
     // null => w przypadku gdy String nie jest poprawny
     private List<Image> createImageBarcodeList(String barcodeTypeFromForm, String[] inputFromForm) throws BadElementException {
@@ -119,17 +124,18 @@ public class BarcodeCreatorService {
         if (barcodeType == null) {      // QR
             BarcodeQRCode barcodeQRCode;
             for (String s : inputFromForm) {
-                if (isCorrectInputString(s)) {
+                if (barcodeValidator.validateBarcode(s, barcodeType)) {
                     barcodeQRCode = new BarcodeQRCode(s, 200, 200, new HashMap<>());
                     barcodeImageList.add(barcodeQRCode.getImage());
                 } else {
+//                    barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
                     barcodeImageList.add(null); // nastapil blad
                 }
             }
         }
         else {
             for (String s : inputFromForm) {
-                if (isCorrectInputString(barcodeType, s)) {
+                if (barcodeValidator.validateBarcode(s, barcodeType)) {
                     barcodeType.setCode(s);
                     Image image = barcodeType.createImageWithBarcode(pdfContentByte, null, null);
                     image.scalePercent(300);

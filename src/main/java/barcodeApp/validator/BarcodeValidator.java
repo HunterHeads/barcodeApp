@@ -1,5 +1,6 @@
 package barcodeApp.validator;
 
+import com.itextpdf.text.pdf.*;
 import org.springframework.stereotype.Component;
 
 // funkcje sprawdzajace zgodnosc z danym kodem oraz przechowywanie komunikatow o bledach
@@ -8,13 +9,32 @@ public final class BarcodeValidator {
     private String errorMessage;
     private String barcode;
 
-    public BarcodeValidator() {
-
-    }
+    public BarcodeValidator() {}
 
     public BarcodeValidator(String errorMessage, String barcode) {
         this.errorMessage = errorMessage;
         this.barcode = barcode;
+    }
+
+    public boolean validateBarcode(String content, Barcode barcode){
+
+        switch(barcode.getCodeType()){
+            case 9: //128
+                return isBarcode128(content);
+            case 12: //CODABAR
+                return isBarcodeCodabar(content);
+            case 2:// EAN
+                return isBarcodeEAN(content);
+            case 7: //POSTNET
+                return isBarcodePostnet(content);
+            case 0: // Inter25 i 39
+                if(barcode instanceof Barcode39)
+                    return isBarcode39(content);
+                else
+                    return isBarcodeInter25(content);
+            default:
+                return isBarcodeQR(content);
+        }
     }
 
     public boolean isBarcode128(String barcode) {
