@@ -41,7 +41,7 @@ public class BarcodeCreatorService {
             case "Postnet":
                 return new BarcodePostnet();
             default:
-                return null; // QR nie dziedziczy po Barode
+                return null; // QR nie dziedziczy po Barcode
         }
     }
 
@@ -126,8 +126,7 @@ public class BarcodeCreatorService {
                     barcodeImageList.add(null); // nastapil blad
                 }
             }
-        }
-        else {
+        } else {
             for (String s : inputFromForm) {
                 if (isCorrectInputString(barcodeType, s)) {
                     barcodeType.setCode(s);
@@ -150,23 +149,26 @@ public class BarcodeCreatorService {
         try {
             List<Image> barcodeImageList = createImageBarcodeList(barcodeTypeFromForm, inputFromForm);
             document.add(new Paragraph("Results for Barcode" + barcodeTypeFromForm));
-            int i = 0; // iterator barcodeChecker
             int j = 0; // iterator ilosci elementow na stronie
             for (Image b : barcodeImageList) {
-                if (b == null) {     // w przypadku bledu wypisywanie czego on dotyczy - bledy przechowywane na liscie
-                    document.add(new Paragraph(barcodeValidatorList.get(i).getBarcode() + " : " + barcodeValidatorList.get(i).getErrorMessage()));
-                    i++;
-                } else {
+                if (b != null) {
                     document.add(b);
                     document.add(new Paragraph("\n\n"));
-                }
 
-                if (++j % 3 == 0) {
-                    document.newPage();
-                    j = 0;
+                    if (++j % 3 == 0) {
+                        document.newPage();
+                        j = 0;
+                    }
                 }
             }
 
+            if (barcodeValidatorList.isEmpty() == false) {
+                document.newPage();
+                document.add(new Paragraph("Errors:"));
+                for (BarcodeValidator bv : barcodeValidatorList) {
+                    document.add(new Paragraph(bv.getBarcode() + ": " + bv.getErrorMessage()));
+                }
+            }
             document.close();
             return document;
         } catch (BadElementException e) {
