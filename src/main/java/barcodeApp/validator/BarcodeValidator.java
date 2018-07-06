@@ -93,8 +93,20 @@ public final class BarcodeValidator {
         return true;
     }
 
-    public boolean isBarcodePostnet(String barcode) { // ?
-        errorMessage = "Postnet";
+    public boolean isBarcodePostnet(String barcode) {
+        if (barcode.length() < 5 || barcode.length() > 13){
+            errorMessage = "Invalid barcode lenght. POSTNET must have 5-13 characters";
+            return false;
+        }
+
+        char[] barcodeCharacters = barcode.toCharArray();
+        for (char c : barcodeCharacters){
+            if (c < '0' || c > '9'){
+                errorMessage = "Invalid characters. Allowed are 0-9";
+                return false;
+            }
+        }
+
         return true;
     }
 
