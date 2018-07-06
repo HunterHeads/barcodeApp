@@ -3,11 +3,13 @@ package barcodeApp.service;
 import com.itextpdf.text.*;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.pdf.*;
+import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
 
+@Service
 public class BarcodeCreatorService {
     {
         exetutionNumber = 0;
