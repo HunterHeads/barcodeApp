@@ -106,7 +106,7 @@ public class PdfCreator {
     }
 
     // null => w przypadku gdy String nie jest poprawny
-    private List<Image> createImageBarcodeList(String barcodeTypeFromForm, String... inputFromForm) throws BadElementException {
+    private List<Image> createImageBarcodeList(String barcodeTypeFromForm, String[] inputFromForm) throws BadElementException {
         List<Image> barcodeImageList = new LinkedList<>();
         Barcode barcodeType = getBarcodeType(barcodeTypeFromForm);
         PdfContentByte pdfContentByte = pdfWriter.getDirectContent();
@@ -135,7 +135,7 @@ public class PdfCreator {
         return barcodeImageList;
     }
 
-    private Document createPdfFile(String barcodeTypeFromForm, String filePath, String... inputFromForm) throws DocumentException, IOException {
+    private Document createPdfFile(String barcodeTypeFromForm, String filePath, String[] inputFromForm) throws DocumentException, IOException {
         Document document = new Document();
         pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(filePath));
         document.open();
@@ -172,7 +172,7 @@ public class PdfCreator {
         barcodeChecker = null;
     }
 
-    public InputStream receiveDataFromFormAndReturnPdfFile(String barcodeTypeFromForm, String... inputFromForm) {
+    private InputStream performToPdfFile(String barcodeTypeFromForm, String[] inputFromForm) {
         InputStream inputStream = null;
 
         try {
@@ -187,5 +187,14 @@ public class PdfCreator {
         } finally {
             return inputStream;
         }
+    }
+
+    public InputStream receiveDataFromFormAndReturnPdfFile(String barcodeTypeFromForm, String inputFromForm){
+        InputStream inputStream;
+
+        String[] inputArray = inputFromForm.split(",");
+        inputStream = performToPdfFile(barcodeTypeFromForm, inputArray);
+
+        return inputStream;
     }
 }
