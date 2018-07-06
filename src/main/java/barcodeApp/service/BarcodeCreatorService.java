@@ -1,15 +1,22 @@
-package barcodeApp;
+package barcodeApp.service;
 
+import barcodeApp.validator.BarcodeValidator;
 import com.itextpdf.text.*;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.pdf.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-public class PdfCreator {
+@Service
+public class BarcodeCreatorService {
+    @Autowired
+    BarcodeCreatorService barcodeCreatorService;
+
     static {
         exetutionNumber = 0;
     }
@@ -17,7 +24,7 @@ public class PdfCreator {
     private static final String FILE_DESTINATION = "results/";
     private static int exetutionNumber;
     private PdfWriter pdfWriter;
-    private List<BarcodeChecker> barcodeChecker;
+    private List<BarcodeValidator> barcodeValidatorList;
 
     private Barcode getBarcodeType(String barcodeTypeFromForm) {
         switch (barcodeTypeFromForm) {
@@ -42,12 +49,12 @@ public class PdfCreator {
 
     // obiekt do testow bc - if false => zapisanie tego faktu na liscie wraz z odpowiednim komunikatem bledu
     private boolean isCorrectInputString(Barcode barcode, String input) {
-        BarcodeChecker bc = new BarcodeChecker();
+        BarcodeValidator bc = new BarcodeValidator();
         if (barcode instanceof Barcode128) {
             if (bc.isBarcode128(input)) {
                 return true;
             } else {
-                barcodeChecker.add(new BarcodeChecker(bc.getErrorMessage(), input));
+                barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
                 return false;
             }
         }
@@ -55,7 +62,7 @@ public class PdfCreator {
             if (bc.isBarcode39(input)) {
                 return true;
             } else {
-                barcodeChecker.add(new BarcodeChecker(bc.getErrorMessage(), input));
+                barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
                 return false;
             }
         }
@@ -63,7 +70,7 @@ public class PdfCreator {
             if (bc.isBarcodeCodabar(input)) {
                 return true;
             } else {
-                barcodeChecker.add(new BarcodeChecker(bc.getErrorMessage(), input));
+                barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
                 return false;
             }
         }
@@ -71,7 +78,7 @@ public class PdfCreator {
             if (bc.isBarcodeEAN(input)) {
                 return true;
             } else {
-                barcodeChecker.add(new BarcodeChecker(bc.getErrorMessage(), input));
+                barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
                 return false;
             }
         }
@@ -79,7 +86,7 @@ public class PdfCreator {
             if (bc.isBarcodeInter25(input)) {
                 return true;
             } else {
-                barcodeChecker.add(new BarcodeChecker(bc.getErrorMessage(), input));
+                barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
                 return false;
             }
         }
@@ -87,7 +94,7 @@ public class PdfCreator {
             if (bc.isBarcodePostnet(input)) {
                 return true;
             } else {
-                barcodeChecker.add(new BarcodeChecker(bc.getErrorMessage(), input));
+                barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
                 return false;
             }
         }
@@ -96,11 +103,11 @@ public class PdfCreator {
     }
 
     private boolean isCorrectInputString(String input) {  // QR
-        BarcodeChecker bc = new BarcodeChecker();
+        BarcodeValidator bc = new BarcodeValidator();
         if (bc.isBarcodeQR(input)) {
             return true;
         } else {
-            barcodeChecker.add(new BarcodeChecker(bc.getErrorMessage(), input));
+            barcodeValidatorList.add(new BarcodeValidator(bc.getErrorMessage(), input));
             return false;
         }
     }
@@ -148,7 +155,7 @@ public class PdfCreator {
             int j = 0; // iterator ilosci elementow na stronie
             for (Image b : barcodeImageList) {
                 if (b == null) {     // w przypadku bledu wypisywanie czego on dotyczy - bledy przechowywane na liscie
-                    document.add(new Paragraph(barcodeChecker.get(i).getBarcode() + " : " + barcodeChecker.get(i).getErrorMessage()));
+                    document.add(new Paragraph(barcodeValidatorList.get(i).getBarcode() + " : " + barcodeValidatorList.get(i).getErrorMessage()));
                     i++;
                 } else {
                     document.add(b);
@@ -177,14 +184,14 @@ public class PdfCreator {
     }
 
     private void clear() {
-        barcodeChecker = null;
+        barcodeValidatorList = null;
     }
 
     private InputStream performToPdfFile(String barcodeTypeFromForm, String[] inputFromForm) {
         InputStream inputStream = null;
 
         try {
-            barcodeChecker = new LinkedList<>();
+            barcodeValidatorList = new LinkedList<>();
             String filePath = FILE_DESTINATION + "file" + ++exetutionNumber + ".pdf";
             File outputFile = createFile(filePath);
             createPdfFile(barcodeTypeFromForm, filePath, inputFromForm);
