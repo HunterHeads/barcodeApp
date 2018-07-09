@@ -4,7 +4,8 @@
 <style>
 body
 {
-    background:url('https://s-media-cache-ak0.pinimg.com/originals/39/2d/67/392d675638b96f888aebf283910b3b50.jpg') center no-repeat;
+    background-image: url('https://s-media-cache-ak0.pinimg.com/originals/39/2d/67/392d675638b96f888aebf283910b3b50.jpg');
+    background-size: cover;
 }
 </style>
     <meta charset="utf-8">
@@ -21,9 +22,9 @@ body
 <div class="container">
     <form method="get" action="submitBarcodeForm">
         <div class="form-group">
-            <label><h3><b>Text:</b></h3></label>
+            <h3><b>Text:</b></h3>
             <textarea class="form-control p-3" rows="3" placeholder="Write a text from which the bar code is to be generated, the bar code is generated for every text seperated by comma" name="input" required></textarea>
-            <h3 class="pt-3"><b>Type of the barcode: </h3>     </p><select name="barcodeType">
+            <h3 class="pt-3"><b>Type of the barcode: </b></h3>     </p><select name="barcodeType">
                 <option value="128">128</option>
                 <option value="QR">QR</option>
                 <option value="Codabar">Codabar</option>
