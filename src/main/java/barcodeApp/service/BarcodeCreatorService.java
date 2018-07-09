@@ -78,9 +78,10 @@ public class BarcodeCreatorService {
         return barcodeImageList;
     }
 
-    private Document createPdfFile(String barcodeTypeFromForm, String filePath, String[] inputFromForm) throws DocumentException, IOException {
+    private InputStream createPdfFile(String barcodeTypeFromForm, String[] inputFromForm) throws DocumentException, IOException {
         Document document = new Document();
-        pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(filePath));
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        pdfWriter = PdfWriter.getInstance(document, out);
         document.open();
         try {
             List<Image> barcodeImageList = createImageBarcodeList(barcodeTypeFromForm, inputFromForm);
@@ -97,7 +98,7 @@ public class BarcodeCreatorService {
                     j = 0;
                 }
             }
-            if (barcodeValidatorMap.isEmpty() == false) {
+            if (!barcodeValidatorMap.isEmpty()) {
                 document.newPage();
                 document.add(new Paragraph("Errors:"));
                 for (Map.Entry<String, String> e : barcodeValidatorMap.entrySet()){
@@ -106,18 +107,12 @@ public class BarcodeCreatorService {
             }
 
             document.close();
-            return document;
+            return new ByteArrayInputStream(out.toByteArray());
         } catch (BadElementException e) {
             document.close();
             e.printStackTrace();
             return null;
         }
-    }
-
-    private File createFile(String filePath) {
-        File outputFile = new File(filePath);
-        outputFile.getParentFile().mkdirs();
-        return outputFile;
     }
 
     private void clear() {
@@ -129,10 +124,7 @@ public class BarcodeCreatorService {
 
         try {
             barcodeValidatorMap = new LinkedHashMap<>();
-            String filePath = FILE_DESTINATION + "file" + ++exetutionNumber + ".pdf";
-            File outputFile = createFile(filePath);
-            createPdfFile(barcodeTypeFromForm, filePath, inputFromForm);
-            inputStream = new FileInputStream(outputFile);
+            inputStream = createPdfFile(barcodeTypeFromForm, inputFromForm);
             clear();    // barcodeList !
         } catch (Exception e) {
             e.printStackTrace();
@@ -144,7 +136,7 @@ public class BarcodeCreatorService {
     public InputStream receiveDataFromFormAndReturnPdfFile(String barcodeTypeFromForm, String inputFromForm) {
         InputStream inputStream;
 
-        inputFromForm = inputFromForm.replace(" ", "");
+//        inputFromForm = inputFromForm.replace(" ", "");
         String[] inputArray = inputFromForm.split(",");
         inputStream = performToPdfFile(barcodeTypeFromForm, inputArray);
 

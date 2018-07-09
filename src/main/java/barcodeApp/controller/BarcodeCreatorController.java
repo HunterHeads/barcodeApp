@@ -20,7 +20,7 @@ public class BarcodeCreatorController {
         this.barcodeCreatorService = barcodeCreatorService;
     }
 
-    @GetMapping(value = {"/", "createBarcode"})
+    @GetMapping(value = {"", "/", "createBarcode"})
     public String getBarcodeCreator(){
         return "barcodeCreator";
     }
