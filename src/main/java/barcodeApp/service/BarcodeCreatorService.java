@@ -91,12 +91,14 @@ public class BarcodeCreatorService {
                 if (b != null) {
                     document.add(b);
                     document.add(new Paragraph("\n\n"));
+
+                    if (++j % 3 == 0) {
+                        document.newPage();
+                        j = 0;
+                    }
                 }
 
-                if (++j % 3 == 0) {
-                    document.newPage();
-                    j = 0;
-                }
+
             }
             if (!barcodeValidatorMap.isEmpty()) {
                 document.newPage();

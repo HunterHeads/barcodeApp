@@ -19,7 +19,7 @@ public final class BarcodeValidator {
                     return isBarcode128(content);
                 case 12: //CODABAR
                     return isBarcodeCodabar(content);
-                case 2:// EAN
+                case 1: case 2: // EAN
                     return isBarcodeEAN(content);
                 case 7: //POSTNET
                     return isBarcodePostnet(content);
@@ -87,7 +87,7 @@ public final class BarcodeValidator {
         char[] barcodeCharacters = barcode.toCharArray();
         for (char c : barcodeCharacters) {
             if (c != '-' && c != '$' && c != '*' && c != '/' && c != '.' && c != '+' && c != '%' && c != ' ' &&
-                    (c < '0' || c > '9')) {
+                    (c < '0' || c > '9') && (c != 'A' && c != 'B' && c != 'C' && c != 'D')) {
                 errorMessage = "Invalid characters. Allowed are - $ * / . + % space or 0-9";
                 this.barcode = barcode;
                 return false;
@@ -101,8 +101,8 @@ public final class BarcodeValidator {
         }
 
 
-        if (barcodeCharacters[barcodeCharacters.length - 1] != 'A' || barcodeCharacters[barcodeCharacters.length - 1] != 'B' ||
-                barcodeCharacters[barcodeCharacters.length - 1] != 'C' || barcodeCharacters[barcodeCharacters.length - 1] != 'D') {
+        if (barcodeCharacters[barcodeCharacters.length - 1] != 'A' && barcodeCharacters[barcodeCharacters.length - 1] != 'B' &&
+                barcodeCharacters[barcodeCharacters.length - 1] != 'C' && barcodeCharacters[barcodeCharacters.length - 1] != 'D') {
             errorMessage = "Invalid stop character. Codabar must have one of 'ABCD' as stop character";
             this.barcode = barcode;
             return false;
@@ -116,8 +116,8 @@ public final class BarcodeValidator {
             return false;
         }
 
-        if (barcode.length() != 7 && barcode.length() != 13) {
-            errorMessage = "Invalid barcode length. EAN must have 7 or 13 characters";
+        if (barcode.length() != 13) {
+            errorMessage = "Invalid barcode length. EAN must have 13 characters";
             this.barcode = barcode;
             return false;
         }
