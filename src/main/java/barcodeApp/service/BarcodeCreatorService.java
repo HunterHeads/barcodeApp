@@ -54,7 +54,7 @@ public class BarcodeCreatorService {
             BarcodeQRCode barcodeQRCode;
             for (String s : inputFromForm) {
                 if (barcodeValidator.validateBarcode(s, barcodeType)) {
-                    barcodeQRCode = new BarcodeQRCode(s, 200, 200, new HashMap<>());
+                    barcodeQRCode = new BarcodeQRCode(s, 170, 170, new HashMap<>());
                     barcodeImageList.add(barcodeQRCode.getImage());
                 } else {
                     barcodeValidatorMap.put(barcodeValidator.getBarcode(), barcodeValidator.getErrorMessage());
@@ -79,26 +79,24 @@ public class BarcodeCreatorService {
     }
 
     private InputStream createPdfFile(String barcodeTypeFromForm, String[] inputFromForm) throws DocumentException, IOException {
-        Document document = new Document();
+        Document document = new Document(PageSize.A4, 100, 100, 36, 36);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         pdfWriter = PdfWriter.getInstance(document, out);
         document.open();
         try {
             List<Image> barcodeImageList = createImageBarcodeList(barcodeTypeFromForm, inputFromForm);
-            document.add(new Paragraph("Results for Barcode" + barcodeTypeFromForm));
+//            document.add(new Paragraph("Results for Barcode" + barcodeTypeFromForm));
             int j = 0; // iterator ilosci elementow na stronie
             for (Image b : barcodeImageList) {
                 if (b != null) {
                     document.add(b);
-                    document.add(new Paragraph("\n\n"));
+                    document.add(new Paragraph("\n\n\n\n"));
 
-                    if (++j % 3 == 0) {
+                    if (++j % 4 == 0) {
                         document.newPage();
                         j = 0;
                     }
                 }
-
-
             }
             if (!barcodeValidatorMap.isEmpty()) {
                 document.newPage();
